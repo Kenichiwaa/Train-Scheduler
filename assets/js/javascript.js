@@ -1,55 +1,38 @@
-// Initialize Firebase
-var config = {
-apiKey: "AIzaSyAYY9MBbqC5TNakRIVBriGH-lqh_i5_PAM",
-authDomain: "employee-data-management-d1e35.firebaseapp.com",
-databaseURL: "https://employee-data-management-d1e35.firebaseio.com",
-storageBucket: "employee-data-management-d1e35.appspot.com",
-messagingSenderId: "623502402640"
-};
 
-firebase.initializeApp(config);
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyBtQ0s6D2BqAntMzT_bZlhV82wm6SxVZBA",
+    authDomain: "train-time-73250.firebaseapp.com",
+    databaseURL: "https://train-time-73250.firebaseio.com",
+    storageBucket: "train-time-73250.appspot.com",
+    messagingSenderId: "358539235836"
+  };
+  firebase.initializeApp(config);
 
 	var database = firebase.database();
 
+	// Create variables for form inputs. 
+	var trainName = "";
+	var destination = "";
+	var firstTrainTime = "";
+	var frequency = "";
+	
 	$('#submit').on('click', function(){
 			
-			// grab text from input field place into var
-		  	var employeeName = $('#employeeName').val().trim();
-		  	var role = $('#role').val().trim();
-		  	var startDate = $('#startDate').val().trim();
-		  	var monthlyRate = $('#monthlyRate').val().trim();
+			// grab text from input field, grab value & trim blank spaces before and after 
+		  	trainName = $('#trainName').val().trim();
+		  	destination = $('#destination').val().trim();
+		  	firstTrainTime = $('#firstTrainTime').val().trim();
+		  	frequency = $('#frequency').val().trim();
 
 		  	// pushing object data to firebase
-		  	database.ref().push({
-		  		dateAdded: firebase.database.ServerValue.TIMESTAMP,
-		  		employeeName : employeeName,
-		  		role: role,
-				startDate: startDate,
-				monthlyRate: monthlyRate
+		  	database.ref().set({
+		  		name: firebase.database.ServerValue.TIMESTAMP,
+		  		train: trainName,
+		  		destination : destination,
+		  		trainTime: firstTrainTime,
+				frequency: frequency
 		  	});
-
-
-
-		  		//debugger;
-		  		 database.ref().on('child_added', function(childsnapshot){
-				 	console.log(childsnapshot.val());
-					console.log(childsnapshot.val().employeeName);
-					console.log(childsnapshot.val().role);
-					console.log(childsnapshot.val().startDate);
-					console.log(childsnapshot.val().monthlyRate);
-				 });
-
-
-
-				 // full list of items to the well
-				$('#blah').append("<h1>" + 
-					// "<div class='well'><span id='name'> "+childSnapshot.val().employeeName+ " </span><span id='role'> "+childSnapshot.val().role+" </span><span id='startDate'> "+childSnapshot.val().startDate+" </span><span id='monthlyRate'> "+childSnapshot.val().monthlyRate+" </span></div>");
-
-				 childsnapshot.val().employeeName + "</h1>");
-
-
-
-
 
 	return false; 
 	}); // End #submit click function
