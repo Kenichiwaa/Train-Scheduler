@@ -1,6 +1,10 @@
 	body{
 	}
-
+	h1,p {
+font-size: 2em;  
+font-family: 'Raleway', sans-serif;   
+text-shadow: 1px 1px 0 #333, 1px -1px 0 #333, -1px 1px 0
+	}
 
 	.jumbotron{
 		text-align: center;
