@@ -37,6 +37,7 @@
 	<div class="jumbotron">
 	  <h1>Anytime is Train Time</h1>
 	  <p>Choo Choo. A Comprehensive Directory of Train Times</p>
+	  <p id="currentDateAndTime">Current Time: </p>
 	</div>
 
 <!--  Generated Table -->
@@ -93,13 +94,13 @@
 							<label for="destination">Destination</label>
 							<input type="text" class="form-control" id="destination">
 						</div>	
-						<div class="form-group"> <!-- Input for first train times  -->
+						<div class="form-group"> <!-- First Train Time  -->
 							<label for="firstTrainTime">First Train Time (00:00 - military time)</label>
 							<input type="text" class="form-control" id="firstTrainTime">
 						</div>	
-						<div class="form-group"> <!-- Input for frequency of tain arrivals -->
+						<div class="form-group"> <!-- Frequency of Train Arrivals -->
 							<label for="frequency">Frequency (min)</label>
-							<input type="time" class="form-control" id="frequency">
+							<input type="text" class="form-control" id="frequency">
 						</div>	
 						<button id="submit" type="submit" class="btn btn-primary">Submit</button>
 					</form>
@@ -114,23 +115,29 @@
 	<!-- Latest compiled and minified CSS & JS -->
 	<script src="https://code.jquery.com/jquery.js"></script>
 
-	<!-- Link to the JavaScript -->
+	<!-- Link to JavaScript File -->
 <!-- 	<script src="assets/js/javascript.js"></script> -->
 
 	<!-- Link to firebase data  -->
 	<script src="https://www.gstatic.com/firebasejs/3.5.3/firebase.js"></script>
 
+	<!-- Added Moment JS -->
+ 	<script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
+
 <script>
 
+// GLOBAL VARIABLES // Arrays and variables for holding data
+// =================================================================
+
   // Initialize Firebase
-  var config = {
-    apiKey: "AIzaSyBtQ0s6D2BqAntMzT_bZlhV82wm6SxVZBA",
-    authDomain: "train-time-73250.firebaseapp.com",
-    databaseURL: "https://train-time-73250.firebaseio.com",
-    storageBucket: "train-time-73250.appspot.com",
-    messagingSenderId: "358539235836"
-  };
-  firebase.initializeApp(config);
+	var config = {
+		apiKey: "AIzaSyBtQ0s6D2BqAntMzT_bZlhV82wm6SxVZBA",
+		authDomain: "train-time-73250.firebaseapp.com",
+		databaseURL: "https://train-time-73250.firebaseio.com",
+		storageBucket: "train-time-73250.appspot.com",
+		messagingSenderId: "358539235836"
+	};
+	firebase.initializeApp(config);
 
 	var database = firebase.database();
 
@@ -140,41 +147,92 @@
 	var firstTrainTime = "";
 	var frequency = "";
 	
+// FUNCTIONS (Reusable blocks of code that I will call upon when needed)
+// =================================================================
+
+	var currentDateAndTime = Date();
+	// Display current Date and Time 
+	$('#currentDateAndTime').append(currentDateAndTime);
+	console.log('1 current Time: '+ currentDateAndTime);
+	// Convert time to a String 
+	var currentDateAndTimeInString = currentDateAndTime.toString().split(" ");
+	// Variable of Current Time 
+	var currentTime = currentDateAndTimeInString[4]
+	console.log('2 '+ currentTime);
+
+
+// MAIN PROCESS
+// =================================================================
+
 	$('#submit').on('click', function(){
-			
+
 			// grab text from input field, grab value & trim blank spaces before and after 
 		  	trainName = $('#trainName').val().trim();
 		  	destination = $('#destination').val().trim();
 		  	firstTrainTime = $('#firstTrainTime').val().trim();
 		  	frequency = $('#frequency').val().trim();
 
+// Moment ============================================================
+
+		  	// First Time (pushed back 1 year to make sure it comes before current time)
+		  	var firstTimeConverted = moment(firstTrainTime,"hh:mm").subtract(1, "years");
+		  	console.log(firstTimeConverted);
+
+		  	// Current Time
+		  	var cuttentTimeMoment = moment();
+		  	console.log("Current Time: " + moment(cuttentTimeMoment).format("hh:mm"));
+
+		  	//Difference between the times
+		  	var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+		  	console.log("Difference In Time: " + diffTime);
+
+		  	// Time apart (remainder)
+		  	var tRemainder = diffTime % frequency;
+		  	console.log(frequency);
+
+		  	// Minute Until Train
+		  	var tMinutesUntilTrain = frequency - tRemainder;
+		  	console.log("Minutes Until Train: " + tMinutesUntilTrain);
+
+		  	// Next Train
+		  	var nextTrain = moment().add(tMinutesUntilTrain, "minutes");
+		  	console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
+
+// End Moment ============================================================
+			debugger;
 		  	// pushing object data to firebase
 		  	database.ref().set({
-		  		timeStamp: firebase.database.ServerValue.TIMESTAMP,
+		  		// timeStamp: firebase.database.ServerValue.TIMESTAMP,
 		  		train: trainName,
 		  		destination : destination,
 		  		trainTime: firstTrainTime,
-				frequency: frequency
+				frequency: frequency,
+				nextArrival: nextTrain,
+				minutesAway: tMinutesUntilTrain
 		  	});
 
 	// Don't refresh the page!
 	return false; 
 	}); // End #submit click function
 
-// Create Firebase "watcher" (.on("value"))
-database.ref().on('value', function(snapshot){
-	// Log everthing that's coming out of snapshot
-	console.log(snapshot.val());
-	console.log(snapshot.val().train);
-	console.log(snapshot.val().destination);
-	console.log(snapshot.val().trainTime);
-	console.log(snapshot.val().frequency);
 
-	$(".trainInformation").append('<tr><td>'+ snapshot.val().train +'</td><td>'+ snapshot.val().destination +'</td><td>'+ snapshot.val().trainTime +'</td><td>'+ snapshot.val().frequency +'</td></tr>');
+	// Create Firebase "watcher" (.on("value"))
+	database.ref().on('value', function(snapshot){
+		// Log everthing that's coming out of snapshot
+		console.log(snapshot.val());
+		console.log(snapshot.val().train);
+		console.log(snapshot.val().destination);
+		console.log(snapshot.val().trainTime);
+		console.log(snapshot.val().frequency);
+		console.log(snapshot.val().nextTrain);
+		console.log(snapshot.val().tMinutesUntilTrain);
 
-		
+		$(".trainInformation").append('<tr><td>'+ snapshot.val().train +'</td><td>'+ snapshot.val().destination +'</td><td>'+ snapshot.val().trainTime +'</td><td>'+ snapshot.val().nextTrain +'</td><td>'+ snapshot.val().tMinutesUntilTrain +'</td></tr>');
 
-}); // database.ref().on('value', function(snapshot){
+	}); // End database.ref().on('value', function(snapshot){
+
+
+
 
 </script>
 
