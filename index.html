@@ -180,8 +180,8 @@
 		  	console.log(firstTimeConverted);
 
 		  	// Current Time
-		  	var cuttentTimeMoment = moment();
-		  	console.log("Current Time: " + moment(cuttentTimeMoment).format("hh:mm"));
+		  	var currentTimeMoment = moment();
+		  	console.log("Current Time: " + moment(currentTimeMoment).format("hh:mm"));
 
 		  	//Difference between the times
 		  	var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
@@ -189,7 +189,7 @@
 
 		  	// Time apart (remainder)
 		  	var tRemainder = diffTime % frequency;
-		  	console.log(frequency);
+		  	console.log(tRemainder);
 
 		  	// Minute Until Train
 		  	var tMinutesUntilTrain = frequency - tRemainder;
@@ -199,16 +199,20 @@
 		  	var nextTrain = moment().add(tMinutesUntilTrain, "minutes");
 		  	console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
 
+		  	// Next Train Arrival Time
+		  	 nextTrainArrivalTime = moment(nextTrain).format("hh:mm");
+
+
 // End Moment ============================================================
-			debugger;
+			// debugger;
 		  	// pushing object data to firebase
-		  	database.ref().set({
+		  	database.ref().push({
 		  		// timeStamp: firebase.database.ServerValue.TIMESTAMP,
 		  		train: trainName,
 		  		destination : destination,
 		  		trainTime: firstTrainTime,
 				frequency: frequency,
-				nextArrival: nextTrain,
+				nextArrival: nextTrainArrivalTime,
 				minutesAway: tMinutesUntilTrain
 		  	});
 
@@ -218,17 +222,17 @@
 
 
 	// Create Firebase "watcher" (.on("value"))
-	database.ref().on('value', function(snapshot){
+	database.ref().on('child_added', function(snapshot){
 		// Log everthing that's coming out of snapshot
 		console.log(snapshot.val());
-		console.log(snapshot.val().train);
-		console.log(snapshot.val().destination);
-		console.log(snapshot.val().trainTime);
-		console.log(snapshot.val().frequency);
-		console.log(snapshot.val().nextTrain);
-		console.log(snapshot.val().tMinutesUntilTrain);
+		console.log('train: '+ snapshot.val().train);
+		console.log('destination: '+ snapshot.val().destination);
+		console.log('train time: '+ snapshot.val().trainTime);
+		console.log('frequency: '+ snapshot.val().frequency);
+		console.log('next train: '+ snapshot.val().nextArrival);
+		console.log('minutes away: '+ snapshot.val().minutesAway);
 
-		$(".trainInformation").append('<tr><td>'+ snapshot.val().train +'</td><td>'+ snapshot.val().destination +'</td><td>'+ snapshot.val().trainTime +'</td><td>'+ snapshot.val().nextTrain +'</td><td>'+ snapshot.val().tMinutesUntilTrain +'</td></tr>');
+		$(".trainInformation").append('<tr><td>'+ snapshot.val().train +'</td><td>'+ snapshot.val().destination +'</td><td>'+ snapshot.val().frequency +'</td><td>'+ snapshot.val().nextArrival +'</td><td>'+ snapshot.val().minutesAway +'</td></tr>');
 
 	}); // End database.ref().on('value', function(snapshot){
 
