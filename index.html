@@ -36,7 +36,6 @@
 	<div class="jumbotron">
 	  <h1>Anytime is Train Time</h1>
 	  <p>Choo Choo. A Comprehensive Directory of Train Times</p>
-	  <p id="currentDateAndTime">Current Time: </p>
 	</div>
 
 <!-- Main container for bootstrap -->
@@ -63,13 +62,6 @@
 							  </thead>
 
 							  <tbody class="trainInformation">
-								    <tr>
-								      <td>Trenton Express</td>
-								      <td>Trenton</td>
-								      <td>25</td>
-								      <td>05:35 PM</td>
-								      <td>10</td>
-								    </tr>
 							  </tbody>
 						</table>
 				</div>
@@ -130,6 +122,7 @@
 // GLOBAL VARIABLES // Arrays and variables for holding data
 // =================================================================
 
+
   // Initialize Firebase
 	var config = {
 		apiKey: "AIzaSyBtQ0s6D2BqAntMzT_bZlhV82wm6SxVZBA",
@@ -148,20 +141,6 @@
 	var firstTrainTime = "";
 	var frequency = "";
 	
-// FUNCTIONS (Reusable blocks of code that I will call upon when needed)
-// =================================================================
-
-	var currentDateAndTime = Date();
-	// Display current Date and Time 
-	$('#currentDateAndTime').append(currentDateAndTime);
-	console.log('1 current Time: '+ currentDateAndTime);
-	// Convert time to a String 
-	var currentDateAndTimeInString = currentDateAndTime.toString().split(" ");
-	// Variable of Current Time 
-	var currentTime = currentDateAndTimeInString[4]
-	console.log('2 '+ currentTime);
-
-
 // MAIN PROCESS
 // =================================================================
 
@@ -173,71 +152,69 @@
 		  	firstTrainTime = $('#firstTrainTime').val().trim();
 		  	frequency = $('#frequency').val().trim();
 
-// Moment ============================================================
-
-		  	// First Time (pushed back 1 year to make sure it comes before current time)
-		  	var firstTimeConverted = moment(firstTrainTime,"hh:mm").subtract(1, "years");
-		  	console.log(firstTimeConverted);
-
-		  	// Current Time
-		  	var currentTimeMoment = moment();
-		  	console.log("Current Time: " + moment(currentTimeMoment).format("hh:mm"));
-
-		  	//Difference between the times
-		  	var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-		  	console.log("Difference In Time: " + diffTime);
-
-		  	// Time apart (remainder)
-		  	var tRemainder = diffTime % frequency;
-		  	console.log(tRemainder);
-
-		  	// Minute Until Train
-		  	var tMinutesUntilTrain = frequency - tRemainder;
-		  	console.log("Minutes Until Train: " + tMinutesUntilTrain);
-
-		  	// Next Train
-		  	var nextTrain = moment().add(tMinutesUntilTrain, "minutes");
-		  	console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
-
-		  	// Next Train Arrival Time
-		  	 nextTrainArrivalTime = moment(nextTrain).format("hh:mm");
-
-
-// End Moment ============================================================
-			// debugger;
 		  	// pushing object data to firebase
 		  	database.ref().push({
-		  		// timeStamp: firebase.database.ServerValue.TIMESTAMP,
 		  		train: trainName,
 		  		destination : destination,
 		  		trainTime: firstTrainTime,
 				frequency: frequency,
-				nextArrival: nextTrainArrivalTime,
-				minutesAway: tMinutesUntilTrain
 		  	});
 
 	// Don't refresh the page!
 	return false; 
 	}); // End #submit click function
 
-
 	// Create Firebase "watcher" (.on("value"))
 	database.ref().on('child_added', function(snapshot){
-		// Log everthing that's coming out of snapshot
-		console.log(snapshot.val());
-		console.log('train: '+ snapshot.val().train);
-		console.log('destination: '+ snapshot.val().destination);
-		console.log('train time: '+ snapshot.val().trainTime);
-		console.log('frequency: '+ snapshot.val().frequency);
-		console.log('next train: '+ snapshot.val().nextArrival);
-		console.log('minutes away: '+ snapshot.val().minutesAway);
 
-		$(".trainInformation").append('<tr><td>'+ snapshot.val().train +'</td><td>'+ snapshot.val().destination +'</td><td>'+ snapshot.val().frequency +'</td><td>'+ snapshot.val().nextArrival +'</td><td>'+ snapshot.val().minutesAway +'</td></tr>');
+			var newTrainName = snapshot.val().train;
+			var newDestination = snapshot.val().destination;
+			var newFirstTrainTime = snapshot.val().trainTime;
+			var newFrequency = snapshot.val().frequency;
+
+			// Moment ============================================================
+
+			  	// First Time (pushed back 1 year to make sure it comes before current time)
+			  	var firstTimeConverted = moment(newFirstTrainTime,"hh:mm").subtract(1, "years");
+			  	console.log(firstTimeConverted);
+
+			  	// Current Time
+			  	var currentTimeMoment = moment();
+			  	console.log("Current Time: " + moment(currentTimeMoment).format("hh:mm"));
+
+			  	//Difference between the times
+			  	var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+			  	console.log("Difference In Time: " + diffTime);
+
+			  	// Time apart (remainder)
+			  	var tRemainder = diffTime % newFrequency;
+			  	console.log(tRemainder);
+
+			  	// Minute Until Train
+			  	var tMinutesUntilTrain = newFrequency - tRemainder;
+			  	console.log("Minutes Until Train: " + tMinutesUntilTrain);
+
+			  	// Next Train
+			  	var nextTrain = moment().add(tMinutesUntilTrain, "minutes");
+			  	console.log("Arrival Time: " + moment(nextTrain).format("hh:mm"));
+
+			  	// Next Train Arrival Time
+			  	var nextTrainArrivalTime = moment(nextTrain).format("hh:mm");
+
+			// End Moment ============================================================
+
+			// Log everthing that's coming out of snapshot
+			console.log(snapshot.val());
+			console.log('train: '+ snapshot.val().train);
+			console.log('destination: '+ snapshot.val().destination);
+			console.log('train time: '+ snapshot.val().trainTime);
+			console.log('frequency: '+ snapshot.val().frequency);
+			console.log('next train: '+ nextTrainArrivalTime);
+			console.log('minutes away: '+ tMinutesUntilTrain);
+
+		$(".trainInformation").append('<tr><td>'+ newTrainName +'</td><td>'+ newDestination +'</td><td>'+ newFrequency +'</td><td>'+ nextTrainArrivalTime +'</td><td>'+ tMinutesUntilTrain +'</td></tr>');
 
 	}); // End database.ref().on('value', function(snapshot){
-
-
-
 
 </script>
 
